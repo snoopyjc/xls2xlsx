@@ -16,7 +16,7 @@ def main():
     for arg in args._:
         try:
             x2x = XLS2XLSX(arg)
-            filename = os.path.splitext(os.path.split(fn)[-1])[0]+'.xlsx'
+            filename = os.path.splitext(os.path.split(arg)[-1])[0]+'.xlsx'
             x2x.to_xlsx(filename=filename)
             if args.verbose:
                 print(f'Converted {arg} to {filename}')
