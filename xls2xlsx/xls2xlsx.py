@@ -10,6 +10,7 @@ from openpyxl.utils.datetime import CALENDAR_MAC_1904
 import requests
 from time import sleep
 import os
+import copy     # Issue #4
 try:
     import xlrd4 as xlrd
 except Exception:

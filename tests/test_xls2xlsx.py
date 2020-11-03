@@ -66,6 +66,7 @@ EXPECTED_FAILURES['Styles3.xls']['Sheet2']['B1'] = 'font'
 EXPECTED_FAILURES.update({'Extras1.xls': {'Sheet1': {'all': 'image'}}}) # xlrd eats images
 EXPECTED_FAILURES.update({'Extras2.xls': {'Sheet1': {'all': 'image'}}}) # Real xlsx only shows 1 image, the rest are other things (e.g. text box)
 EXPECTED_FAILURES['timedelta2.mht'] = {'Sheet1': {'all': 'dimension'}}  # Extra row in HTML version
+EXPECTED_FAILURES['Issue4.XLS'] = dict(OUT_ASI_HKG_JPN = dict(all='dimension,width')) # Images at the top get eaten, so the sheet starts at A4, and openpyxl is messing up the column widths
 
 for col in ('B', 'C', 'N', 'O'):    # Numbers are right-justified in the HTML, but None or 'general' in the xlsx
     for row in range(12, 17):
@@ -309,7 +310,8 @@ def test_one_xls(xls):
                     exp_rd = ws_exp.row_dimensions[row]
                     out_rd = ws_out.row_dimensions[row]
                     assert exp_rd.hidden == out_rd.hidden
-                    assert close_value(exp_rd.height, out_rd.height, DEFAULT_ROW_HEIGHT)
+                    if not exp_rd.hidden:
+                        assert close_value(exp_rd.height, out_rd.height, DEFAULT_ROW_HEIGHT)
         if 'width' not in esfa:
             for col in range(ws_exp.min_column, ws_exp.max_column+1):
                 cl = get_column_letter(col)
@@ -318,7 +320,8 @@ def test_one_xls(xls):
                     exp_cd = ws_exp.column_dimensions[cl]
                     out_cd = ws_out.column_dimensions[cl]
                     assert exp_cd.hidden == out_cd.hidden
-                    assert close_value(exp_cd.width, out_cd.width, DEFAULT_COLUMN_WIDTH)
+                    if not exp_cd.hidden:
+                        assert close_value(exp_cd.width, out_cd.width, DEFAULT_COLUMN_WIDTH)
 
         for row in range(ws_exp.min_row, ws_exp.max_row+1):
             for col in range(ws_exp.min_column, ws_exp.max_column+1):
@@ -338,7 +341,7 @@ def test_one_xls(xls):
                     assert (row, col) == (row, col) and eq(exp_cell.border, out_cell.border)
                 if 'alignment' not in esf and exp_cell.value is not None:
                     assert (row, col) == (row, col) and eq(exp_cell.alignment, out_cell.alignment)
-                if 'number_format' not in esf:
+                if 'number_format' not in esf and perform_number_format(exp_cell.value, exp_cell.number_format):
                     assert (row, col) == (row, col) and eq_nbs(exp_cell.number_format, out_cell.number_format)
                 if 'hyperlink' not in esf:
                     assert (row, col) == (row, col) and eq(exp_cell.hyperlink, out_cell.hyperlink)
