@@ -4,4 +4,4 @@ from .htmlxls2xlsx import HTMLXLS2XLSX
 
 __author__ = """Joe Cool"""
 __email__ = 'snoopyjc@gmail.com'
-__version__ = '0.1.4'
+__version__ = '0.1.5'

@@ -57,11 +57,14 @@ Not supported by either format:
 * Conditional Formatting (the current stylings are preserved)
 * Formulas (the calculated values are preserved)
 * Charts (the image of the chart is handled by ``.htm`` and ``.mht`` input formats)
+* Drawings (the image of the drawing is handled by ``.htm`` and ``.mht`` input formats)
 * Pivot tables (the current data is preserved)
 * Text boxes (converted to an image by ``.htm`` and ``.mht`` input formats)
 * Shapes and Clip Art (converted to an image by ``.htm`` and ``.mht`` input formats)
 * Autofilter (the current filtered out rows are preserved)
 * Rich text in cells (openpyxl doesn't support this: only styles applied to the entire cell are preserved)
+* Named Ranges
+* Macros (VBA)
 
 ============
 Installation

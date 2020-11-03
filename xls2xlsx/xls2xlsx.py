@@ -47,7 +47,7 @@ class XLS2XLSX:
                 from .htmlxls2xlsx import HTMLXLS2XLSX
                 self.h2x = HTMLXLS2XLSX(self.contents, self.dirname)
             else:
-                raise
+                raise ValueError(e)     # Issue #3
 
     @staticmethod
     def read(f, retries=RETRIES):
@@ -105,7 +105,8 @@ class XLS2XLSX:
             xls_font = self.book.font_list[xf.font_index]       # Font object
             font.b = xls_font.bold
             font.i = xls_font.italic
-            charset = xls_font.character_set        # FIXME: Do we need this?
+            if xls_font.character_set:
+                font.charset = xls_font.character_set
             font.color = self.xls_color_to_xlsx(xls_font.colour_index)
             escapement = xls_font.escapement        # 1=Superscript, 2=Subscript
             family = xls_font.family                # FIXME: 0=Any, 1=Roman, 2=Sans, 3=monospace, 4=Script, 5=Old English/Franktur
@@ -212,7 +213,10 @@ class XLS2XLSX:
                     cell_type = sheet.cell_type(row, col)
                     value = sheet.cell_value(row, col)
                     if cell_type == xlrd.XL_CELL_DATE:
-                        value = self.xls_date_to_xlsx(value)
+                        try:        # Issue #5: Just keep 'bad' dates as float numbers
+                            value = self.xls_date_to_xlsx(value)
+                        except Exception:
+                            pass
                     elif cell_type == xlrd.XL_CELL_NUMBER:
                         try:
                             ival = int(value)

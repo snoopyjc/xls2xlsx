@@ -7,7 +7,7 @@ import colorsys
 import os
 import copy
 from openpyxl import load_workbook
-from openpyxl.utils import get_column_letter
+from openpyxl.utils import get_column_letter, column_index_from_string
 from openpyxl.styles.colors import RGB, COLOR_INDEX
 from openpyxl.styles.borders import Border
 
@@ -67,6 +67,15 @@ EXPECTED_FAILURES.update({'Extras1.xls': {'Sheet1': {'all': 'image'}}}) # xlrd e
 EXPECTED_FAILURES.update({'Extras2.xls': {'Sheet1': {'all': 'image'}}}) # Real xlsx only shows 1 image, the rest are other things (e.g. text box)
 EXPECTED_FAILURES['timedelta2.mht'] = {'Sheet1': {'all': 'dimension'}}  # Extra row in HTML version
 EXPECTED_FAILURES['Issue4.XLS'] = dict(OUT_ASI_HKG_JPN = dict(all='dimension,width')) # Images at the top get eaten, so the sheet starts at A4, and openpyxl is messing up the column widths
+EXPECTED_FAILURES['Issue5.xls'] = dict(Sheet1 = dict(all='width')) # openpyxl is messing up the column widths
+for ndx in range(column_index_from_string('AK'), column_index_from_string('IV')+1):
+    for r in range(15, 89, 8):
+        EXPECTED_FAILURES['Issue5.xls']['Sheet1'][f'{get_column_letter(ndx)}{r}'] = 'border'
+    EXPECTED_FAILURES['Issue5.xls']['Sheet1'][f'{get_column_letter(ndx)}101'] = 'border'
+    for r in (24, 29, 61, 93, 99):
+        EXPECTED_FAILURES['Issue5.xls']['Sheet1'][f'{get_column_letter(ndx)}{r}'] = 'fill'
+    for r in range(102, 107):
+        EXPECTED_FAILURES['Issue5.xls']['Sheet1'][f'{get_column_letter(ndx)}{r}'] = 'fill'
 
 for col in ('B', 'C', 'N', 'O'):    # Numbers are right-justified in the HTML, but None or 'general' in the xlsx
     for row in range(12, 17):
@@ -100,6 +109,8 @@ EXPECTED_FAILURES['timedelta2.mht']['Sheet1'][f'B7'] = 'number_format'  # Genera
 EXPECTED_FAILURES['timedelta2.mht']['Sheet1'][f'A8'] = 'alignment'  # None vs Right
 EXPECTED_FAILURES['timedelta2.mht']['Sheet1'][f'B8'] = 'value'  # str vs int
 
+EXPECTED_FAILURES['Bad.xls'] = ValueError       # Issue #3
+
 for remote_test in REMOTE_TESTS:
     TESTS.remove(os.path.join(INPUTS, remote_test))
     TESTS.add(f'{URL}/{remote_test}')
@@ -126,7 +137,7 @@ def close_color(rgb1, rgb2):
         return True
     yiq1 = colorsys.rgb_to_yiq((rgb1>>24) & 0xff, (rgb1>>16) & 0xff, rgb1 & 0xff)
     yiq2 = colorsys.rgb_to_yiq((rgb2>>24) & 0xff, (rgb2>>16) & 0xff, rgb2 & 0xff)
-    MAX_LUMA_DISTANCE=5
+    MAX_LUMA_DISTANCE=6
     MAX_IN_PHASE_DISTANCE=32
     MAX_QUADRATURE_DISTANCE=55
     if abs(yiq1[0]-yiq2[0]) < MAX_LUMA_DISTANCE and \
@@ -153,11 +164,19 @@ def eq(o1, o2):
             return True     # For PatternFill objects, if there is no pattern, ignore both colors
         if o1.patternType == 'solid' and o2.patternType == 'solid':
             ignore_bgColor = True   # If it's a solid fill, we ignore the background color
+        if o1.patternType is None and o2.patternType == 'solid' and o2.fgColor.type == 'rgb' and o2.fgColor.rgb == '00FFFFFF':
+            return True     # White fill === no fill
+        if o2.patternType is None and o1.patternType == 'solid' and o1.fgColor.type == 'rgb' and o1.fgColor.rgb == '00FFFFFF':
+            return True     # White fill === no fill
     if hasattr(o1, 'type') and hasattr(o2, 'type'):
         if o1.type == 'theme' and o2.type == 'rgb' and o1.theme == 1 and o2.rgb == '00000000' and o1.tint == 0.0 and o2.tint == 0.0:
             return True     # Theme color 1 == black
         if o2.type == 'theme' and o1.type == 'rgb' and o2.theme == 1 and o1.rgb == '00000000' and o1.tint == 0.0 and o2.tint == 0.0:
             return True     # Theme color 1 == black
+        if o1.type == 'theme' and o2.type == 'rgb' and o1.theme == 0 and o2.rgb == '00FFFFFF' and o1.tint == 0.0 and o2.tint == 0.0:
+            return True     # Theme color 0 == white
+        if o2.type == 'theme' and o1.type == 'rgb' and o2.theme == 0 and o1.rgb == '00FFFFFF' and o1.tint == 0.0 and o2.tint == 0.0:
+            return True     # Theme color 0 == white
         if o1.type == 'indexed':
             o1 = copy.copy(o1)
             o1.type = 'rgb'
@@ -280,7 +299,14 @@ def test_one_xls(xls):
 
     expected_failures = EXPECTED_FAILURES.get(basename, dict())
 
-    x2x = XLS2XLSX(inp)
+    try:                                    # Issue #3
+        x2x = XLS2XLSX(inp)
+        if expected_failures is ValueError: # Issue #3
+            assert False    # Issue #3: Failed
+    except ValueError as e: # Issue #3
+        if expected_failures is ValueError: # Issue #3
+            return          # Issue #3: Passed
+        raise               # Issue #3: Failed
     x2x.to_xlsx(filename=output)
     wb_exp = load_workbook(filename=expected)
     wb_out = load_workbook(filename=output)
