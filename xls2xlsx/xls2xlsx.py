@@ -28,7 +28,7 @@ class XLS2XLSX:
        If this xls file is in html format, then we call HTMLXLS2XLSX to convert it.
         """
 
-    def __init__(self, f, dirname='.'):
+    def __init__(self, f, dirname='.',ignore_workbook_corruption=False):
         """f is a url, filename, file object, or xls file contents as a bytes object"""
         self.dirname = dirname
         if isinstance(f, bytes):
@@ -40,7 +40,8 @@ class XLS2XLSX:
 
         self.h2x = None
         try:
-            self.book = xlrd.open_workbook(file_contents=self.contents, formatting_info=True)
+            self.book = xlrd.open_workbook(file_contents=self.contents, formatting_info=True,
+                                            ignore_workbook_corruption=ignore_workbook_corruption)
             self.date_mode = self.book.datemode
         except xlrd.XLRDError as e:
             if str(e).startswith('Unsupported format'):
@@ -48,7 +49,12 @@ class XLS2XLSX:
                 self.h2x = HTMLXLS2XLSX(self.contents, self.dirname)
             else:
                 raise ValueError(e)     # Issue #3
-
+        # try to ignore workbook corruption
+        except xlrd.compdoc.CompDocError:
+            self.book = xlrd.open_workbook(file_contents=self.contents, formatting_info=True,
+                                            ignore_workbook_corruption=True)
+            self.date_mode = self.book.datemode
+            
     @staticmethod
     def read(f, retries=RETRIES):
         """Read from either a URL or a filename or file-like object."""
