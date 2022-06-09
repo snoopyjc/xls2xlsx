@@ -34,10 +34,10 @@ import yaml
 import sys
 import calendar
 try:
-    import currency_symbols.constants as currency_symbols_constants
+    import currency_symbols._constants as currency_symbols_constants
 except Exception:
     import importlib
-    currency_symbols_constants = importlib.import_module('currency-symbols.constants')
+    currency_symbols_constants = importlib.import_module('currency-symbols._constants')
 
 TRACE=False
 
@@ -217,7 +217,7 @@ class FontUtils:
 
         if number_of_lines == 0:    # E.g. if you send the empty string
             number_of_lines = 1
-        
+
         if TRACE:
             print(f'lines_needed({img_width}, {s}, {font.sz}) = {number_of_lines} (2)')
         return number_of_lines
@@ -258,14 +258,14 @@ class CSSStyle:
         # we send thru depending on what tag it is.  This is used to style the entire cell, since we don't support
         # a per-element style (openpyxl doesn't support rich text)
         self.default_styles = """
-.htmlxls2xlsx {background: inherit; background-color: inherit; 
+.htmlxls2xlsx {background: inherit; background-color: inherit;
     border: inherit; border-color: inherit; border-width: inherit; border-bottom-color: inherit; border-left-color: inherit;
     border-right-color: inherit; border-top-color: inherit; border-top: inherit; border-right: inherit; border-bottom: inherit; border-left: inherit;
     border-top-width: inherit; border-right-width: inherit; border-bottom-width: inherit; border-left-width: inherit;
     border-top-style: inherit; border-right-style: inherit; border-bottom-style: inherit; border-left-style: inherit;
     border-top-color: inherit; border-right-color: inherit; border-bottom-color: inherit; border-left-color: inherit;
-    height: inherit; layout-flow: inherit; max-height: inherit; max-width: inherit; min-height: inherit; min-width: inherit; 
-    mso-ignore: inherit; mso-char-indent-count: inherit; mso-number-format: inherit; mso-rotate: inherit; mso-text-control: inherit; 
+    height: inherit; layout-flow: inherit; max-height: inherit; max-width: inherit; min-height: inherit; min-width: inherit;
+    mso-ignore: inherit; mso-char-indent-count: inherit; mso-number-format: inherit; mso-rotate: inherit; mso-text-control: inherit;
     padding: inherit; padding-top: inherit; padding-right: inherit; padding-bottom: inherit; padding-left: inherit;
     text-decoration: inherit; vertical-align: inherit; width: inherit; writing-mode: inherit; }
 .msocomtxt {display: none; }
@@ -302,7 +302,7 @@ th {display: table-cell; vertical-align: inherit; font-size: 1em; font-weight: b
 thead {display: table-header-group; vertical-align: middle; border-color: inherit;}
 tr {display: table-row; vertical-align: inherit; border-color: inherit;}
 """
-        self.font_map = {'calibri': 'Calibri', 'arial': 'Arial', 'serif': 'Times New Roman', 
+        self.font_map = {'calibri': 'Calibri', 'arial': 'Arial', 'serif': 'Times New Roman',
                 'monospace': 'Courier New', 'sans-serif': 'Calibri', 'cursive': 'Comic Sans MS'}
         self.number_format_replacements = {'Fixed': r'0.00', 'Number': r'0.00', 'Short Date': r'm\/dd\/yyyy',
                 'Long Date': r'dddd\, mmmm d\, yyyy', 'Short Time': r'h\:mm AM/PM', 'Long Time': r'h\:mm\:ss AM/PM',
@@ -459,7 +459,7 @@ tr {display: table-row; vertical-align: inherit; border-color: inherit;}
         element>element
         [attribute]
         [attribute=value]
-        
+
         Not handled:
         .class1.class2
         .class1 .class2
@@ -730,7 +730,7 @@ tr {display: table-row; vertical-align: inherit; border-color: inherit;}
                         if pattern in self.pattern_map:
                             fill.patternType = self.pattern_map[pattern]
                 elif item == 'mso-rotate':
-                    if isinstance(value, int) or value.isdigit() or value[0:1] == '-' and value[1:].isdigit(): 
+                    if isinstance(value, int) or value.isdigit() or value[0:1] == '-' and value[1:].isdigit():
                         rot = int(value)
                         if 1 <= rot <= 180:
                             alignment.textRotation = rot
@@ -805,7 +805,7 @@ tr {display: table-row; vertical-align: inherit; border-color: inherit;}
     def read(f, mode='', quiet=False, retries=RETRIES):
         """Read from either a URL or a filename or file-like object.  If mode is 'b', then read in binary.
         If f is a file-like object and you want it read in unicode with the proper encoding, then open it
-        using 'rb' mode and don't pass a mode to this method.  If quiet is True, then return None rather 
+        using 'rb' mode and don't pass a mode to this method.  If quiet is True, then return None rather
         than raising an exception on errors"""
         def bytes_to_str(b, filename=None):
             is_html = True
@@ -868,7 +868,7 @@ tr {display: table-row; vertical-align: inherit; border-color: inherit;}
 
 class HTMLXLS2XLSX:
     """Convert an xls file with html contents into and xlsx file"""
-    
+
     def __init__(self, f, dirname='.'):
         """f is a url, filename, file object, or html string"""
         self.dirname = dirname
@@ -965,7 +965,7 @@ class HTMLXLS2XLSX:
         # the newlines are seen as bogus text elements, so get rid of them: (except this messes up <pre>)
         #self.text = ' '.join(self.text.split())
         #self.text = re.sub(r'''<span\s+style=["']mso-spacerun:yes["']>(\s+)</span>''', lambda m: '&nbsp;' * len(m.group(1)), self.text)
-        self.text = re.sub(r'>[ \n\t\r\f\v]+<', '><', self.text) 
+        self.text = re.sub(r'>[ \n\t\r\f\v]+<', '><', self.text)
         #self.text = self.text.replace('> <', '><')
         stl = self.text.lower()
         if '<table' not in stl and '<frame' not in stl:
@@ -974,7 +974,7 @@ class HTMLXLS2XLSX:
             else:
                 raise ValueError('No <table> tags found - maybe this is Excel 5.0/95 format? If so, try using XLS2XLSX instead.')
         self.url_soup = BeautifulSoup(self.text)
-        
+
     def to_xlsx(self, filename=None, workbook=None, worksheet=None, sheet_name=None):
         """Convert to xlsx using openpyxl.  If filename is not None, then the result
         is written to that file, and the filename is returned, else the workbook is returned.
@@ -1018,7 +1018,7 @@ class HTMLXLS2XLSX:
 
         css_style = CSSStyle()
         font_utils = FontUtils()
-    
+
         styles_html = self.url_soup.find_all(['link', 'style'])
         for s in styles_html:
             if s.name == 'link':
@@ -1128,7 +1128,7 @@ class HTMLXLS2XLSX:
 
         if TRACE:
             print(f'Styles = \n{css_style}')
-    
+
         def str_size(s, font, alignment, max_width, max_height, keep_newlines=False, fully_merged=False):
             """Get approximate width, height of a string, expressed in pixels."""
             is_bold = font.b
@@ -1200,7 +1200,7 @@ class HTMLXLS2XLSX:
             if almost_vertical(rotation):
                 return (height, width)
             return (width, height)
-    
+
         tables_html = self.url_soup.find_all("table")
         if sheet_name is None:
             m = re.search(r'<x:Name>([^<]+?)</x:Name>', self.text)
@@ -1348,7 +1348,7 @@ class HTMLXLS2XLSX:
             tokens = []
             nf = ''
             token_seen = set()
-            (TOK_HOUR, TOK_HOUR0, TOK_HOUR_12, TOK_HOUR0_12, TOK_MIN, TOK_SEC, TOK_DAY, TOK_DAY0, 
+            (TOK_HOUR, TOK_HOUR0, TOK_HOUR_12, TOK_HOUR0_12, TOK_MIN, TOK_SEC, TOK_DAY, TOK_DAY0,
             TOK_MONTH, TOK_MONTH0, TOK_YEAR, TOK_YEAR2, TOK_SHORT_DAY, TOK_LONG_DAY, TOK_SHORT_MONTH, TOK_LONG_MONTH,
             TOK_SEP, TOK_ampm, TOK_AMPM) = range(19)
             token_equiv = [set((TOK_HOUR, TOK_HOUR0, TOK_HOUR_12, TOK_HOUR0_12)),
@@ -1437,7 +1437,7 @@ class HTMLXLS2XLSX:
             if TRACE:
                 print(f'guess_date_format({dt}, {str_dt}) = {number_format} (toks={toks})')
             return number_format
-        
+
         def get_heights(elem, style):
             """Return the height, min_height, max_height of a given element with the given style"""
             height = None       # height could be 0 for hidden rows
@@ -1600,7 +1600,7 @@ class HTMLXLS2XLSX:
         fully_merged_rows = set()
         extra_images = []   # If we have more than 1 image per cell, we put them here until the end
         has_image = set()   # Cells (like A1) that have images
-    
+
         for table in tables_html:
             parent = table.parent
             while parent:
@@ -1623,12 +1623,12 @@ class HTMLXLS2XLSX:
                     border_style = 'medium'
                 side = Side(border_style=border_style)
                 bor = Border(left=side, right=side, top=side, bottom=side)
-            
-            # Create list to store rowspan values 
+
+            # Create list to store rowspan values
             skip_index = [0 for i in range(0, global_n_cols)]
             if TRACE:
                 print(f'skip_index = {skip_index}')
-                    
+
             # Start by iterating over each row in this table...
             for row in table.find_all("tr"):
                 if row.parent != table and row.parent.parent != table:     # Don't look at nested rows (2 checks because of thead/tbody)
@@ -1715,7 +1715,7 @@ class HTMLXLS2XLSX:
                         # both styles to the entire cell.
                         c_col = col
                         while c_col.contents and len(c_col.contents) == 1 and c_col.contents[0].name in \
-                          ('big', 'small', 'center', 'div', 'span', 'a', 'b', 'i', 'u', 'em', 's', 'strike', 
+                          ('big', 'small', 'center', 'div', 'span', 'a', 'b', 'i', 'u', 'em', 's', 'strike',
                            'code', 'pre', 'strong', 'font', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr'):
                             cont = c_col.contents[0]
                             tuples.append((cont.name, cont.attrs))
@@ -1770,20 +1770,20 @@ class HTMLXLS2XLSX:
                         else:
                             col_dim.append(int(colspan))
                         col_dim_counter += 1
-                            
+
                         rowspan = col.get("rowspan")
                         if rowspan is None:
                             row_dim.append(1)
                         else:
                             row_dim.append(int(rowspan))
                         row_dim_counter += 1
-                            
+
                         # Adjust column counter
                         if col_counter == -1:
-                            col_counter = 0  
+                            col_counter = 0
                         else:
                             col_counter = col_counter + col_dim[col_dim_counter - 1]
-                            
+
                         while skip_index[col_counter] > 0:
                             col_counter += 1
 
@@ -1794,7 +1794,7 @@ class HTMLXLS2XLSX:
                             print(f'style={style} for {cl}{rw} with {col.get_text()}')
                             print(f'font={font}, fill={fill}, border={border} ({border.left}, {border.top}, {border.right}, {border.bottom}), alignment={alignment}, number_format={number_format}')
 
-                        # Get cell contents  
+                        # Get cell contents
                         #cell_data = col.get_text()     # It's not quite this easy!!
                         white_space = style.get('white-space', 'nowrap' if col.name=='th' else 'normal')
                         cell_data = ''
@@ -1886,7 +1886,7 @@ class HTMLXLS2XLSX:
 
                                 # Depth first traversal: insert all sub-nodes in the list after this one
                                 contents = contents[0:i+1] + list(cont.contents) + contents[i+1:]
-                        
+
                         # Insert data into cell
                         if TRACE:
                             print(f'ws.cell({rw}, {cc}).value = {type_it(cell_data, number_format)}')
@@ -1926,7 +1926,7 @@ class HTMLXLS2XLSX:
                                     width += image.width
                                 images = []
                             if comment_contents and comment_author:
-                                ws.cell(rw, cc).comment = OpenpyxlComment(comment_author + comment_contents, 
+                                ws.cell(rw, cc).comment = OpenpyxlComment(comment_author + comment_contents,
                                                                           comment_author[:-1])   # Remove the ':' from author
                         except AttributeError as e:     # pragma nocover
                             if TRACE:           # Shouldn't happen anymore, but don't crash if it does
@@ -1945,7 +1945,7 @@ class HTMLXLS2XLSX:
                                 print(f'ws.merge_cells(start_row={rw}, start_column={cc}, end_row={row_counter+rd}, end_column={col_counter+cd})')
                             end_row = row_counter+rd
                             ws.merge_cells(start_row=rw,
-                                    start_column=cc, 
+                                    start_column=cc,
                                     end_row=end_row,
                                     end_column=col_counter+cd)
                             if col_counter+cd >= global_n_cols:
@@ -2015,10 +2015,10 @@ class HTMLXLS2XLSX:
                                 if TRACE:
                                     print(f'this_skip_index[{col_counter+i}] = row_dim[{row_dim_counter}] = {rd}')
                                 this_skip_index[col_counter+i] = row_dim[row_dim_counter]
-                
-                # Adjust row counter 
+
+                # Adjust row counter
                 row_counter += 1
-                
+
                 # Adjust column skipping index
                 skip_index = [i - 1 if i > 0 else i for i in this_skip_index]
                 if TRACE:
