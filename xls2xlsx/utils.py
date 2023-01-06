@@ -1,11 +1,19 @@
 from fractions import Fraction
 from openpyxl.utils.datetime import from_excel
-from openpyxl.styles.numbers import is_date_format
+# broken! from openpyxl.styles.numbers import is_date_format
+from openpyxl.styles.numbers import STRIP_RE
 from datetime import datetime, date, timedelta
 from datetime import time as tm
 import re
 
 TRACE=False
+
+def is_date_format(fmt):            # The one in openpyxl doesn't work properly!
+    if fmt is None:
+        return False
+    fmt = fmt.split(";")[0] # only look at the first format
+    fmt = STRIP_RE.sub("", fmt) # ignore some formats
+    return re.search(r"(?<!\\)[dmhysDMHYS]", fmt) is not None
 
 def perform_number_format(value, number_format):
     """This is a half-baked attempt at formatting the given

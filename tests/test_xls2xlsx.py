@@ -116,8 +116,12 @@ for remote_test in REMOTE_TESTS:
     TESTS.add(f'{URL}/{remote_test}')
 
 color_index = list(COLOR_INDEX)
-color_index[64] = '00000000'      # Index 64: System foreground
-color_index[65] = '00FFFFFF'      # Index 65: System background
+try:
+    color_index[64] = '00000000'      # Index 64: System foreground
+    color_index[65] = '00FFFFFF'      # Index 65: System background
+except Exception:                       # Newer openpyxl deleted these 2 elements
+    color_index.append('00000000')
+    color_index.append('00FFFFFF')
 
 def close_color(rgb1, rgb2):
     """xls colors are mapped using a color palette which doesn't accurately represent the
@@ -148,6 +152,10 @@ def close_color(rgb1, rgb2):
     return False
 
 def eq(o1, o2):
+    if o1 is None and hasattr(o2, 'style') and o2.style is None:
+        return True     # issue with diagonal: None vs diagonal: Side(style=None)
+    if o2 is None and hasattr(o1, 'style') and o1.style is None:
+        return True     # issue with diagonal: None vs diagonal: Side(style=None)
     if o1 is None or o2 is None:
         return o1 == o2
     if type(o1) is not type(o2):
@@ -240,32 +248,32 @@ def or_border(ws1, ws2, row, col):
     ws1_cell = ws1.cell(row, col)
     ws2_cell = ws2.cell(row, col)
     if row != ws1.min_row:
-        if not ws1_cell.border.top.style and ws2_cell.border.top.style and \
-                ws1.cell(row-1, col).border.bottom.style:
+        if (not ws1_cell.border.top or not ws1_cell.border.top.style) and ws2_cell.border.top and ws2_cell.border.top.style and \
+                ws1.cell(row-1, col).border.bottom and ws1.cell(row-1, col).border.bottom.style:
             ws1_cell.border = Border(top=ws1.cell(row-1, col).border.bottom, left=ws1_cell.border.left, right=ws1_cell.border.right, bottom=ws1_cell.border.bottom)
-        elif not ws2_cell.border.top.style and ws1_cell.border.top.style and \
-                ws2.cell(row-1, col).border.bottom.style:
+        elif (not ws2_cell.border.top or not ws2_cell.border.top.style) and ws1_cell.border.top and ws1_cell.border.top.style and \
+                ws2.cell(row-1, col).border.bottom and ws2.cell(row-1, col).border.bottom.style:
             ws2_cell.border = Border(top=ws2.cell(row-1, col).border.bottom, left=ws2_cell.border.left, right=ws2_cell.border.right, bottom=ws2_cell.border.bottom)
     if row != ws1.max_row:
-        if not ws1_cell.border.bottom.style and ws2_cell.border.bottom.style and \
-                ws1.cell(row+1, col).border.top.style:
+        if (not ws1_cell.border.bottom or not ws1_cell.border.bottom.style) and ws2_cell.border.bottom and ws2_cell.border.bottom.style and \
+                ws1.cell(row+1, col).border.top and ws1.cell(row+1, col).border.top.style:
             ws1_cell.border = Border(bottom=ws1.cell(row+1, col).border.top, left=ws1_cell.border.left, right=ws1_cell.border.right, top=ws1_cell.border.top)
-        elif not ws2_cell.border.bottom.style and ws1_cell.border.bottom.style and \
-                ws2.cell(row+1, col).border.top.style:
+        elif (not ws2_cell.border.bottom or not ws2_cell.border.bottom.style) and ws1_cell.border.bottom and ws1_cell.border.bottom.style and \
+                ws2.cell(row+1, col).border.top and ws2.cell(row+1, col).border.top.style:
             ws2_cell.border = Border(bottom=ws2.cell(row+1, col).border.top, left=ws2_cell.border.left, right=ws2_cell.border.right, top=ws2_cell.border.top)
     if col != ws1.min_column:
-        if not ws1_cell.border.left.style and ws2_cell.border.left.style and \
-                ws1.cell(row, col-1).border.right.style:
+        if (not ws1_cell.border.left or not ws1_cell.border.left.style) and ws2_cell.border.left and ws2_cell.border.left.style and \
+                ws1.cell(row, col-1).border.right and ws1.cell(row, col-1).border.right.style:
             ws1_cell.border = Border(left=ws1.cell(row, col-1).border.right, right=ws1_cell.border.right, bottom=ws1_cell.border.bottom, top=ws1_cell.border.top)
-        elif not ws2_cell.border.left.style and ws1_cell.border.left.style and \
-                ws2.cell(row, col-1).border.right.style:
+        elif (not ws2_cell.border.left or not ws2_cell.border.left.style) and ws1_cell.border.left and ws1_cell.border.left.style and \
+                ws2.cell(row, col-1).border.right and ws2.cell(row, col-1).border.right.style:
             ws2_cell.border = Border(left=ws2.cell(row, col-1).border.right, right=ws2_cell.border.right, bottom=ws2_cell.border.bottom, top=ws2_cell.border.top)
     if col != ws1.max_column:
-        if not ws1_cell.border.right.style and ws2_cell.border.right.style and \
-                ws1.cell(row, col+1).border.left.style:
+        if (not ws1_cell.border or not ws1_cell.border.right.style) and ws2_cell.border.right and ws2_cell.border.right.style and \
+                ws1.cell(row, col+1).border.left and ws1.cell(row, col+1).border.left.style:
             ws1_cell.border = Border(right=ws1.cell(row, col+1).border.left, left=ws1_cell.border.left, bottom=ws1_cell.border.bottom, top=ws1_cell.border.top)
-        elif not ws2_cell.border.right.style and ws1_cell.border.right.style and \
-                ws2.cell(row, col+1).border.left.style:
+        elif (not ws2_cell.border.right or not ws2_cell.border.right.style) and ws1_cell.border.right and ws1_cell.border.right.style and \
+                ws2.cell(row, col+1).border.left and ws2.cell(row, col+1).border.left.style:
             ws2_cell.border = Border(right=ws2.cell(row, col+1).border.left, left=ws2_cell.border.left, bottom=ws2_cell.border.bottom, top=ws2_cell.border.top)
 
 best_diff = 0.0

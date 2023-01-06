@@ -28,9 +28,10 @@ class XLS2XLSX:
        If this xls file is in html format, then we call HTMLXLS2XLSX to convert it.
         """
 
-    def __init__(self, f, dirname='.'):
+    def __init__(self, f, dirname='.', ignore_workbook_corruption=False):
         """f is a url, filename, file object, or xls file contents as a bytes object"""
         self.dirname = dirname
+        self.ignore_workbook_corruption = ignore_workbook_corruption
         if isinstance(f, bytes):
             self.contents = f
         else:
@@ -40,7 +41,8 @@ class XLS2XLSX:
 
         self.h2x = None
         try:
-            self.book = xlrd.open_workbook(file_contents=self.contents, formatting_info=True)
+            self.book = xlrd.open_workbook(file_contents=self.contents, formatting_info=True,
+                                           ignore_workbook_corruption=ignore_workbook_corruption)
             self.date_mode = self.book.datemode
         except xlrd.XLRDError as e:
             if str(e).startswith('Unsupported format'):
@@ -48,6 +50,13 @@ class XLS2XLSX:
                 self.h2x = HTMLXLS2XLSX(self.contents, self.dirname)
             else:
                 raise ValueError(e)     # Issue #3
+        except xlrd.compdoc.CompDocError:
+            try:
+                self.book = xlrd.open_workbook(file_contents=self.contents, formatting_info=True,
+                                           ignore_workbook_corruption=True)
+                self.date_mode = self.book.datemode
+            except Exception:
+                self.book = None        # completely ignore corruption that cannot be corrected
 
     @staticmethod
     def read(f, retries=RETRIES):
@@ -102,20 +111,23 @@ class XLS2XLSX:
         if xf_ndx < len(self.book.xf_list):
             xf = self.book.xf_list[xf_ndx]
 
-            xls_font = self.book.font_list[xf.font_index]       # Font object
-            font.b = xls_font.bold
-            font.i = xls_font.italic
-            if xls_font.character_set:
-                font.charset = xls_font.character_set
-            font.color = self.xls_color_to_xlsx(xls_font.colour_index)
-            escapement = xls_font.escapement        # 1=Superscript, 2=Subscript
-            family = xls_font.family                # FIXME: 0=Any, 1=Roman, 2=Sans, 3=monospace, 4=Script, 5=Old English/Franktur
-            font.name = xls_font.name
-            font.sz = self.xls_height_to_xlsx(xls_font.height)    # A twip = 1/20 of a pt
-            if xls_font.struck_out:
-                font.strike = xls_font.struck_out
-            if xls_font.underline_type:
-                font.u = ('single', 'double')[(xls_font.underline_type&3)-1]
+            try:            # Avoidance for issue #11 (though I cannot duplicate the problem w/o the input file)
+                xls_font = self.book.font_list[xf.font_index]       # Font object
+                font.b = xls_font.bold
+                font.i = xls_font.italic
+                if xls_font.character_set:
+                    font.charset = xls_font.character_set
+                font.color = self.xls_color_to_xlsx(xls_font.colour_index)
+                escapement = xls_font.escapement        # 1=Superscript, 2=Subscript
+                family = xls_font.family                # FIXME: 0=Any, 1=Roman, 2=Sans, 3=monospace, 4=Script, 5=Old English/Franktur
+                font.name = xls_font.name
+                font.sz = self.xls_height_to_xlsx(xls_font.height)    # A twip = 1/20 of a pt
+                if xls_font.struck_out:
+                    font.strike = xls_font.struck_out
+                if xls_font.underline_type:
+                    font.u = ('single', 'double')[(xls_font.underline_type&3)-1]
+            except Exception:
+                pass
 
             xls_format = self.book.format_map[xf.format_key]    # Format object
             number_format = xls_format.format_str
@@ -176,6 +188,9 @@ class XLS2XLSX:
 
         if self.h2x:
             return self.h2x.to_xlsx(filename=filename)
+
+        if self.book is None and self.ignore_workbook_corruption:
+            return None     # Couldn't be loaded - nothing we can do
 
         wb = Workbook()         # creates one worksheet
         ws = wb.active

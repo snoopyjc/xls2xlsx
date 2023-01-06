@@ -116,3 +116,4 @@ _*.html
 *.swo
 
 RELEASE_INSTRUCTIONS.txt
+requirements_las.txt

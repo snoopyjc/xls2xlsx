@@ -36,7 +36,6 @@ xls2xlsx.xls2xlsx module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 

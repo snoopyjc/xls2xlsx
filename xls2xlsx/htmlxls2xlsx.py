@@ -33,11 +33,7 @@ from fontTools import ttLib          # pip install fonttools
 import yaml
 import sys
 import calendar
-try:
-    import currency_symbols.constants as currency_symbols_constants
-except Exception:
-    import importlib
-    currency_symbols_constants = importlib.import_module('currency-symbols.constants')
+import currency_symbols._constants as currency_symbols_constants
 
 TRACE=False
 
@@ -45,6 +41,7 @@ cssutils.log.setLevel(logging.CRITICAL) # Remove 'Unknown Property name' message
 BUILTIN_FORMATS[14] = 'm/d/yyyy'    # See https://foss.heptapod.net/openpyxl/openpyxl/-/issues/1534
 del BUILTIN_FORMATS_REVERSE['mm-dd-yy']
 BUILTIN_FORMATS_REVERSE['m/d/yyyy'] = 14
+REQUESTS_HEADER = {'User-Agent': 'xls2xlsx/0.2.0 (https://pypi.org/project/xls2xlsx/; snoopyjc@gmail.com) htmlxls2xlsx.py/0.2.0'}
 
 class FontUtils:
     LINE_HEIGHT_FACTOR = 1.25        # line_height in px = Font size in px * LINE_HEIGHT_FACTOR
@@ -821,7 +818,7 @@ tr {display: table-row; vertical-align: inherit; border-color: inherit;}
             if '://' in f:  # URL
                 for r in range(retries):
                     try:
-                        resp = requests.get(f)
+                        resp = requests.get(f, headers=REQUESTS_HEADER)
                         resp.raise_for_status()
                         if mode == 'b':
                             return resp.content

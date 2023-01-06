@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.0 (2023-01-05)
+------------------
+
+* Modernize for more recent pythons and more recent packages. Drop support for Python 3.6.  Fix issues #11, #14, #16. Add feature #12.
+
+
 0.1.5 (2020-11-03)
 ------------------
 

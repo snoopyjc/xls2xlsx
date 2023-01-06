@@ -12,7 +12,7 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [ 'xlrd', 'openpyxl', 'requests', 'beautifulsoup4', 'Pillow',
         'python-dateutil', 'cssutils', 'webcolors', 'currency-symbols',
-        'fonttools', 'PyYAML']
+        'chardet', 'fonttools', 'PyYAML']
 
 setup_requirements = ['pytest-runner', ]
 
@@ -21,16 +21,17 @@ test_requirements = ['pytest>=3', ]
 setup(
     author="Joe Cool",
     author_email='snoopyjc@gmail.com',
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
     description="Convert xls file to xlsx",
     entry_points={
@@ -50,6 +51,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/snoopyjc/xls2xlsx',
-    version='0.1.5',
+    version='0.2.0',
     zip_safe=False,
 )
