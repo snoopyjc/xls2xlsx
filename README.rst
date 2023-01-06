@@ -129,9 +129,9 @@ Note: The file format is determined by examining the file contents, *not* by loo
 Dependencies
 ============
 
-Python >= 3.6 is required.
+Python >= 3.7 is required.
 
-These packages are also required: ``xlrd, openpyxl, requests, beautifulsoup4, Pillow, python-dateutil, cssutils, webcolors, currency-symbols, fonttools, PyYAML``.
+These packages are also required: ``xlrd, openpyxl, requests, beautifulsoup4, Pillow, python-dateutil, cssutils, webcolors, currency-symbols, chardet, fonttools, PyYAML``.
 
 ====================
 Implementation Notes
@@ -153,7 +153,8 @@ Development Lead
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Stitch-Zhang: https://github.com/Stitch-Zhang
+* tigsinthetrees: https://github.com/tigsinthetrees
 
 ================
 Acknowledgements
