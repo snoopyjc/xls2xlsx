@@ -1699,13 +1699,14 @@ class HTMLXLS2XLSX:
                         if 'align' in col.attrs:
                             alg = Alignment(horizontal=col.attrs['align'])
                         if 'valign' in col.attrs:
-                            if value == 'middle':
-                                value = 'center'
-                            if value in {'distributed', 'justify', 'bottom', 'top', 'center'}:
+                            valign_value = col.attrs['valign'] # Get the valign attribute value
+                            if valign_value == 'middle':
+                                valign_value = 'center'
+                            if valign_value in {'distributed', 'justify', 'bottom', 'top', 'center'}:
                                 if alg:
-                                    alg.vertical = value
+                                    alg.vertical = valign_value
                                 else:
-                                    alg = Alignment(vertical=value)
+                                    alg = Alignment(vertical=valign_value)
                         # If this cell contains one formatting tag, then apply that tag to the entire contents of
                         # the cell, since openpyxl doesn't support rich text.  If that tag also contains one
                         # formatting tag, then keep going, so <td><font size="5"><span style="font-family: monospace">...</span></font></td> will apply
