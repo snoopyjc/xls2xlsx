@@ -21,6 +21,7 @@ import traceback
 import logging
 import email            # For mht files
 import shutil
+import tempfile
 from functools import lru_cache
 from dateutil.parser import parse as date_parse
 from datetime import datetime, date, timedelta
@@ -49,7 +50,7 @@ class FontUtils:
         self.skinny_chars = "1!|iIl.,;:' "
         self.upper_chars = "ABCDEFGHJKLMNOPQRSTUVXYZmw()[]$&*-+{}<>/?"
         self.fat_chars = 'MW@#%_'
-        fontnames_file = os.path.join(os.path.dirname(__file__), 'fontnames.yaml')
+        fontnames_file = tempfile.gettempdir() + '/fontnames.yaml'
         self.name_to_path = {}
         if os.path.isfile(fontnames_file):
             with open(fontnames_file, 'r') as fn:
